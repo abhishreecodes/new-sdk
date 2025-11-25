@@ -24,9 +24,12 @@ interface ChartStyleSet {
 }
 
 export interface ChartWidgetProps {
-  client?: any;
-  nodeId?: string;
-  variable?: string;
+  client: any;
+  nodeId: string;
+  variable: string;
+  from:number,
+  to:number,
+  limit?:number,
   title?: string;
   styles?: ChartStyleSet;
   tooltipFormatter?: (d: ChartDataPoint) => string;
@@ -99,7 +102,10 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   client,
   nodeId,
   variable,
-  title = "Chart Widget",
+  from,
+  to,
+  limit=100,
+  title = "Latest Data",
   styles = {},
   tooltipFormatter = (d) =>
     `${new Date(
@@ -175,14 +181,15 @@ const dotRadius = chartSx.dotRadius ?? defaultStyles.chart.dotRadius;
       try {
         setLoading(true);
         setError(null);
-        const currentTime = Date.now();
-        const twentyFourHoursAgo = currentTime - 86400 * 1000;
-
+        // const currentTime = Date.now();
+        // const twentyFourHoursAgo = currentTime - 86400 * 1000;
+//1732420983000
+//1763956983000
         const req = {
           variable,
-          from: 1732420983000,
-          to: 1763956983000,
-          limit: 20,
+          from: from,
+          to: to,
+          limit: limit,
           order: "asc",
         };
         const res = await node.getData(req);
@@ -465,18 +472,3 @@ const dotRadius = chartSx.dotRadius ?? defaultStyles.chart.dotRadius;
   );
 };
 
-//add customizable toolips, stroke width and color, and title obvs , timestamps for get data request
-//match customization and failsafes to latest data
-//documentation
-//modify anedya client as well
-//adjust rateLimitMs
-//how do i also ensure that the y axis labels dont crpss the container card border , all labels are contained within th container card
-
-//ftick format functions
-//responsiveness
-//frequesncy of ticks
-//show all widgets
-//documentation
-//consistent widget default styling , default color palette and theme
-//beta launch
-//how to add docs in npm --- add them in read me

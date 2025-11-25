@@ -56,6 +56,8 @@ function App() {
             client={client}
             nodeId={nodeId}
             variable="humidity"
+            from={1732420983000}
+            to={1763956983000}
             title="Humidity Trend"
             styles={{
               container: {
@@ -81,7 +83,7 @@ function App() {
             }}
             tickCount={5}
             tooltipFormatter={(p) =>
-              `${new Date(p.timestamp).toLocaleString()}: ${p.value}°C`
+              `${new Date(p.timestamp*1000).toLocaleString()}: ${p.value}°C`
             }
           />
         </div>
