@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Anedya } from "@anedyasystems/anedya-frontend-sdk";
 import { CSSProperties } from "react";
+import { validateRequiredProps } from "../helpers/validate";
 // --- Default color ranges ---
 const defaultColorRanges = [
   { max: 20, color: "red" },
@@ -10,8 +11,8 @@ const defaultColorRanges = [
 
 // --- Default styles ---
 interface StyleSet {
-  container?:CSSProperties;
-  label?:CSSProperties;
+  container?: CSSProperties;
+  label?: CSSProperties;
   value?: CSSProperties;
   unit?: CSSProperties;
   fontFamily?: string; // optional global font family for all 3
@@ -21,17 +22,20 @@ const defaultFontFamily = "Roboto, sans-serif";
 
 const defaultStyles: Required<StyleSet> = {
   container: {
-    backgroundColor: "#f4f4f4",
-    borderRadius: 10,
+    width: 400,
+    height: 250,
     padding: 2,
+    margin: 0,
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
+    borderRadius: 10,
+    boxSizing: "border-box",
+    background:
+      "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
     gap: 2,
     textAlign: "center",
-    width: 200,
-    height: 200,
   },
   label: { fontWeight: 500, color: "#ffffff", fontFamily: defaultFontFamily },
   value: { fontWeight: 700, color: "#ffffff", fontFamily: defaultFontFamily },
@@ -46,7 +50,9 @@ const getColorFromRange = (value: number, ranges = defaultColorRanges) => {
 };
 
 // --- Helper: normalize sx for TypeScript ---
-const normalizeSx = (sx: Record<string, any>  | undefined): Record<string, any> => {
+const normalizeSx = (
+  sx: Record<string, any> | undefined
+): Record<string, any> => {
   if (!sx) return {};
   if (Array.isArray(sx)) return Object.assign({}, ...sx);
   if (typeof sx === "function") return sx({}) as Record<string, any>;
@@ -81,6 +87,13 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
   colorRange,
   colorRangeCallback,
 }) => {
+
+   validateRequiredProps(
+    "LatestDataWidget",
+    { client, nodeId, variable },
+    ["client", "nodeId", "variable"]
+  );
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,73 +103,64 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
 
   const isFetchingRef = useRef(false);
   const failureCountRef = useRef(0);
- const mountedRef = useRef(false);
-const lastFetchRef = useRef(0);
+  const mountedRef = useRef(false);
+  const lastFetchRef = useRef(0);
 
-
-useEffect(() => {
-  if (client && nodeId) {
-    const anedya = (client as any)._anedya as Anedya; // retrieve wrapped instance
-    const createdNode = anedya.NewNode(client, nodeId);
-    setNode(createdNode);
-  }
-}, [client, nodeId]);
-
-
-// --- Fetch data once safely ---
   useEffect(() => {
-
-
-       mountedRef.current = true;
-         if (!node) return;
-      const fetchData= async()=> {
-  
-     if ( isFetchingRef.current|| failureCountRef.current >= MAX_FAILURES){
-
-      //rate limiter ----> in client 
-      console.log("!node:",node)
-      console.log("isFetchingRef.current:",isFetchingRef.current)
-      console.log("failureCountRef.current:",failureCountRef.current)
-      return
-     }; // don't try if node not ready or if an api call is being currently made already
-    
-     isFetchingRef.current = true;
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await node.getLatestData(variable);
-
-      if (!mountedRef.current) return; // <-- SAFE, stops state update if unmounted
-
-      if (res.isSuccess && res.isDataAvailable) {
-        setData(res.data?.value);
-        setError("");
-      } else {
-        setData(null);
-        setError("No data available");
-      }
-       failureCountRef.current = 0; // reset on success
-    } catch (err: any) {
-  if (!mountedRef.current) return;
-  console.error("Error fetching latest data:", err);
-      setData(null);
-      setError(err?.message ?? "Failed to fetch data");
-         failureCountRef.current += 1;
-    
-    } finally {
-        if (!mountedRef.current) return;
-    setLoading(false);
-    isFetchingRef.current = false;
+    if (client && nodeId) {
+      const anedya = (client as any)._anedya as Anedya; // retrieve wrapped instance
+      const createdNode = anedya.NewNode(client, nodeId);
+      setNode(createdNode);
     }
-  }
+  }, [client, nodeId]);
+
+  // --- Fetch data once safely ---
+  useEffect(() => {
+    mountedRef.current = true;
+    if (!node) return;
+    const fetchData = async () => {
+      if (isFetchingRef.current || failureCountRef.current >= MAX_FAILURES) {
+        //rate limiter ----> in client
+        console.log("!node:", node);
+        console.log("isFetchingRef.current:", isFetchingRef.current);
+        console.log("failureCountRef.current:", failureCountRef.current);
+        return;
+      } // don't try if node not ready or if an api call is being currently made already
+
+      isFetchingRef.current = true;
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await node.getLatestData(variable);
+
+        if (!mountedRef.current) return; // <-- SAFE, stops state update if unmounted
+
+        if (res.isSuccess && res.isDataAvailable) {
+          setData(res.data?.value);
+          setError("");
+        } else {
+          setData(null);
+          setError("No data available");
+        }
+        failureCountRef.current = 0; // reset on success
+      } catch (err: any) {
+        if (!mountedRef.current) return;
+        console.error("Error fetching latest data:", err);
+        setData(null);
+        setError(err?.message ?? "Failed to fetch data");
+        failureCountRef.current += 1;
+      } finally {
+        if (!mountedRef.current) return;
+        setLoading(false);
+        isFetchingRef.current = false;
+      }
+    };
     fetchData();
 
     return () => {
       mountedRef.current = false;
     };
-    
   }, [node, variable]);
-
 
   // --- Normalize styles ---
   const containerSx = normalizeSx(styles?.container);
@@ -201,7 +205,7 @@ useEffect(() => {
     ...containerSx,
     gap: containerGap,
   };
-  const mergedLabelSx:CSSProperties = {
+  const mergedLabelSx: CSSProperties = {
     ...defaultStyles.label,
     fontSize: labelFont,
     ...labelSx,
@@ -214,40 +218,43 @@ useEffect(() => {
     ...valueSx,
     fontFamily: valueFontFamily,
   };
-  const mergedUnitSx:CSSProperties = {
+  const mergedUnitSx: CSSProperties = {
     ...defaultStyles.unit,
     fontSize: unitFont,
     ...unitSx,
     fontFamily: unitFontFamily,
-    
   };
   return (
     <div style={mergedContainerSx}>
       {title && <h2 style={mergedLabelSx}>{title}</h2>}
       <div style={mergedValueSx}>
         {loading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+              height: "100%",
+            }}
+          >
             <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        height: "100%",
-      }}
-    >
-      <div
-        className="spinner"
-        style={{
-          width: Math.min(Number(width), Number(height)) * 0.3,
-          height: Math.min(Number(width), Number(height)) * 0.3,
-        }}
-      ></div>
-       </div>
+              className="spinner"
+              style={{
+                width: Math.min(Number(width), Number(height)) * 0.3,
+                height: Math.min(Number(width), Number(height)) * 0.3,
+              }}
+            ></div>
+          </div>
         ) : error ? (
-          
-       "Error fetching latest data"
-    
-   
+          <div
+            style={{
+              fontSize: "30px",
+              color: "red",
+            }}
+          >
+            {"error:" + " " + error}
+          </div>
         ) : (
           data ?? "--"
         )}

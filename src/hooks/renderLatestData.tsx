@@ -45,12 +45,7 @@ export const LatestDataComponent: React.FC<LatestDataComponentProps> = React.mem
 ) => {
   return (
     <>
-      <div
-        style={{
-          height: "200px",
-          width: "200px",
-        }}
-      >
+    
         <LatestDataWidget
          client={client}
   nodeId={nodeId}
@@ -61,7 +56,7 @@ export const LatestDataComponent: React.FC<LatestDataComponentProps> = React.mem
   colorRange={colorRange}
   colorRangeCallback={colorRangeCallback}
         />
-      </div>
+      
     </>
   );
 }, 
