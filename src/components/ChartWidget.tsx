@@ -10,6 +10,12 @@ export interface ChartDataPoint {
   timestamp: number;
   value: number;
 }
+type WidgetState = {
+  value?: any;
+  loading?: boolean;
+  error?: string | null; // ✅ matches your React state
+};
+
 
 interface ChartStyleSet {
   container?: CSSProperties;
@@ -23,6 +29,9 @@ interface ChartStyleSet {
     dotRadius?: number;
   };
 }
+type StylesInput =
+  | ChartStyleSet
+  | ((state: WidgetState) => ChartStyleSet);
 
 export interface ChartWidgetProps {
   client: any;
@@ -32,7 +41,7 @@ export interface ChartWidgetProps {
   to:number,
   limit?:number,
   title?: string;
-  styles?: ChartStyleSet;
+  styles?: StylesInput;
   tooltipFormatter?: (d: ChartDataPoint) => string;
   tickCount?: number; // number of ticks on x axis (default: 4)
   tickFormatter?: (d: Date) => string; // optional custom formatter
@@ -153,17 +162,22 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   const [node, setNode] = useState<any>(null);
 
 
+  const state = { data, loading, error }; // <-- your widget’s internal state
+
+const resolvedStyles: ChartStyleSet =
+  typeof styles === "function" ? styles(state) : styles || {};
+
   const mountedRef = useRef(false);
   const failureCountRef = useRef(0);
   const isFetchingRef = useRef(false);
   const MAX_FAILURES = 3;
 
   // ---- Normalize Styles ----
-  const containerSx = normalizeSx(styles?.container);
-  const titleSx = normalizeSx(styles?.title);
-  const tooltipSx = normalizeSx(styles?.tooltip);
-  const chartSx = styles.chart ?? {};
-  const axisSx = normalizeSx(styles?.axis);
+  const containerSx = normalizeSx(resolvedStyles?.container);
+  const titleSx = normalizeSx(resolvedStyles?.title);
+  const tooltipSx = normalizeSx(resolvedStyles?.tooltip);
+  const chartSx = resolvedStyles.chart ?? {};
+  const axisSx = normalizeSx(resolvedStyles?.axis);
 
   // --- Container dimensions with TypeScript-safe default ---
   const containerDefaults: any = defaultStyles.container!;

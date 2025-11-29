@@ -9,6 +9,12 @@ const defaultColorRanges = [
   { max: Infinity, color: "green" },
 ];
 
+type WidgetState = {
+  value?: number;
+  loading: boolean;
+  error?: string|null;
+};
+
 // --- Default styles ---
 interface StyleSet {
   container?: CSSProperties;
@@ -17,6 +23,13 @@ interface StyleSet {
   unit?: CSSProperties;
   fontFamily?: string; // optional global font family for all 3
 }
+
+
+type StylesInput =
+  | StyleSet
+  | ((state: WidgetState) => StyleSet);
+
+
 
 const defaultFontFamily = "Roboto, sans-serif";
 
@@ -72,7 +85,7 @@ interface WidgetProps {
   variable: string;
   title?: string;
   unit?: string;
-  styles?: StyleSet;
+  styles?: StylesInput;
   colorRange?: typeof defaultColorRanges;
   colorRangeCallback?: (value: number, defaultColor: string) => string;
 }
@@ -104,6 +117,14 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
   const failureCountRef = useRef(0);
   const mountedRef = useRef(false);
   const lastFetchRef = useRef(0);
+
+       // Build a state object to pass into the callback styles
+const widgetState = { data, loading, error };
+
+// Resolve function or static style object
+const resolvedStyles =
+  typeof styles === "function" ? styles(widgetState) : styles || {};
+
 
   useEffect(() => {
     if (client && nodeId) {
@@ -164,10 +185,10 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
   }, [node, variable]);
 
   // --- Normalize styles ---
-  const containerSx = normalizeSx(styles?.container);
-  const labelSx = normalizeSx(styles?.label);
-  const valueSx = normalizeSx(styles?.value);
-  const unitSx = normalizeSx(styles?.unit);
+  const containerSx = normalizeSx(resolvedStyles?.container);
+  const labelSx = normalizeSx(resolvedStyles?.label);
+  const valueSx = normalizeSx(resolvedStyles?.value);
+  const unitSx = normalizeSx(resolvedStyles?.unit);
 
   // --- Container dimensions with TypeScript-safe default ---
   const containerDefaults: any = defaultStyles.container!;
@@ -178,14 +199,14 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
   const baseFont = Math.min(Number(width), Number(height)) * 0.15;
 
   // --- Compute font sizes dynamically if not provided by user ---
-  const labelFont = (styles?.label as any)?.fontSize ?? baseFont * 0.6;
+  const labelFont = (resolvedStyles?.label as any)?.fontSize ?? baseFont * 0.6;
 
-  const valueFont = (styles?.value as any)?.fontSize ?? baseFont * 1.2;
+  const valueFont = (resolvedStyles?.value as any)?.fontSize ?? baseFont * 1.2;
 
-  const unitFont = (styles?.unit as any)?.fontSize ?? baseFont * 0.8;
+  const unitFont = (resolvedStyles?.unit as any)?.fontSize ?? baseFont * 0.8;
 
   // --- Font family handling ---
-  const globalFontFamily = styles?.fontFamily ?? "Roboto";
+  const globalFontFamily = resolvedStyles?.fontFamily ?? "Roboto";
   const labelFontFamily = labelSx.fontFamily ?? globalFontFamily;
   const valueFontFamily = valueSx.fontFamily ?? globalFontFamily;
   const unitFontFamily = unitSx.fontFamily ?? globalFontFamily;

@@ -30,6 +30,11 @@ export interface Zone {
   to: number; // exclusive
   color: string;
 }
+type WidgetState = {
+  value?: any;
+  loading?: boolean;
+  error?: string | null; // ✅ matches your React state
+};
 
 export interface GaugeStyleSet {
   container?: CSSProperties;
@@ -38,6 +43,13 @@ export interface GaugeStyleSet {
   subtitle?: CSSProperties;
   arc?: CSSProperties;
 }
+
+
+type StylesInput =
+  | GaugeStyleSet
+  | ((state: WidgetState) => GaugeStyleSet);
+
+
 
 export interface GaugeMetrics {
   maxRadius: number;
@@ -66,7 +78,7 @@ export interface GaugeWidgetProps {
   needleWidth?: number;
   title?: string;
   subtitle?: string;
-  styles?: GaugeStyleSet;
+styles?: StylesInput;
   disabled?: boolean; //for pointer label
   tickCount?: number;
   uom?: string;
@@ -145,10 +157,20 @@ export const LatestDataGauge: React.FC<GaugeWidgetProps> = ({
       ["client", "nodeId", "variable"]
     );
   
+
+ 
   const [value,setValue] = useState<any>(null)
    const [node, setNode] = useState<any>(null); // <-- store node in state
     const [loading, setLoading] = useState(false);
      const [error, setError] = useState<string | null>(null);
+
+     // Build a state object to pass into the callback styles
+const widgetState = { value, loading, error };
+
+// Resolve function or static style object
+const resolvedStyles =
+  typeof styles === "function" ? styles(widgetState) : styles || {};
+
 
    // --- Preventing stale closures / infinite renders ---
    
@@ -158,11 +180,11 @@ export const LatestDataGauge: React.FC<GaugeWidgetProps> = ({
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   // normalize style objects
-  const containerSx = normalizeSx(styles.container);
-  const titleSx = normalizeSx(styles.title);
-  const valueTextSx = normalizeSx(styles.valueText);
-  const subtitleSx = normalizeSx(styles.subtitle);
-  const arcSx = normalizeSx(styles.arc);
+  const containerSx = normalizeSx(resolvedStyles.container);
+  const titleSx = normalizeSx(resolvedStyles.title);
+  const valueTextSx = normalizeSx(resolvedStyles.valueText);
+  const subtitleSx = normalizeSx(resolvedStyles.subtitle);
+  const arcSx = normalizeSx(resolvedStyles.arc);
 
 
     // --- Container dimensions with TypeScript-safe default ---
@@ -452,7 +474,7 @@ export const LatestDataGauge: React.FC<GaugeWidgetProps> = ({
     needleColor,
     needleWidth,
     valueText,
-    styles, // keep redraw when style shape changes
+    resolvedStyles, // keep redraw when style shape changes
   ]);
 
   /** Red gradient props for arcSegments */
@@ -485,7 +507,7 @@ export const LatestDataGauge: React.FC<GaugeWidgetProps> = ({
     
     <div style={{...mergedContainer}}>
       {title && (
-        <h2 style={{ ...((styles.title as any) ?? {}), ...titleSx }}>
+        <h2 style={{ ...((resolvedStyles.title as any) ?? {}), ...titleSx }}>
           {title}
         </h2>
       )}

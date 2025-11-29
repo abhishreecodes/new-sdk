@@ -13,7 +13,11 @@ function App() {
   const client = initAnedyaClient(tokenId, token);
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div
+      style={{
+        padding: "2rem",
+      }}
+    >
       <h1>Test Widget SDK</h1>
       <div
         style={{
@@ -25,7 +29,51 @@ function App() {
         <div
           style={{
             display: "flex",
-            gap: 200,
+
+            alignItems: "center",
+          }}
+        >
+          <ChartWidget
+            client={client}
+            nodeId={nodeId}
+            variable="humidity"
+            from={1732420983000}
+            to={1763956983000}
+            limit={40}
+            title="Humidity Trend"
+            styles={({ data, loading, error }) => ({
+              container: {
+                background: loading
+                  ? "rgb(248, 249, 250)"
+                  : error
+                  ? "rgb(248, 249, 250)"
+                  : "rgb(248, 249, 250)",
+                borderRadius: 6,
+                border: "1px solid rgba(211, 216, 220, 1)",
+              },
+              title: { color: "#000000", fontSize: "18px" },
+              chart: {
+                strokeColor: "rgba(0, 143, 251, 0.85)",
+                strokeWidth: 3,
+                gradientColors: ["rgba(0, 143, 251, 0.85)", "#ffe0b2"],
+              },
+              tooltip: {
+                backgroundColor: "rgba(148, 54, 54, 0.75)",
+                color: "#fff",
+                fontSize: "13px",
+              },
+            })}
+            tickCount={5}
+            tooltipFormatter={(p) =>
+              `${new Date(p.timestamp * 1000).toLocaleString()}: ${p.value}°C`
+            }
+          />
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+
             alignItems: "center",
           }}
         >
@@ -35,82 +83,66 @@ function App() {
             variable="humidity"
             title="Humidity Sensor"
             unit={"°C"}
-            styles={{
+            styles={({ value, loading, error }) => ({
               container: {
-                width: 350,
-                height: 200,
-                background:
-                  "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
-
+                background: loading
+                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
+                  : error
+                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
+                  : value > 80
+                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
+                  : "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
                 borderRadius: 10,
                 gap: 1,
-                padding: "20px",
               },
-              label: { fontWeight: 500, color: "#ffffff", fontSize: "20px" },
-              value: { fontWeight: 700, fontSize: "100px" },
+              value: {
+                color: value > 80 ? "yellow" : "white",
+                fontSize: value > 100? "40px" : "100px",
+                fontWeight: 700,
+                color: "#ffffff",
+              },
               unit: { fontWeight: 400, color: "#ffffff", fontSize: "30px" },
-              fontFamily: "Arial, sans-serif", // global font
-            }}
-          />
-          <ChartWidget
-            client={client}
-            nodeId={nodeId}
-            variable="humidity"
-            from={1732420983000}
-            to={1763956983000}
-            title="Humidity Trend"
-            styles={{
-              container: {
-                width: 450,
-                height: 300,
-                //rgb(248, 249, 250)
-                background: "rgb(248, 249, 250)",
-                borderRadius: 6,
-                border: "1px solid rgba(211, 216, 220, 1)",
-                padding: 10,
-              },
-              title: { color: "#000000", fontSize: "18px" },
-              chart: {
-                strokeColor: "rgba(0, 143, 251, 0.85)",
-                strokeWidth: 3,
-                gradientColors: ["rgba(0, 143, 251, 0.85)", "#ffe0b2"],
-              },
-              tooltip: {
-                backgroundColor: "rgba(0,0,0,0.75)",
-                color: "#fff",
-                fontSize: "13px",
-              },
-            }}
-            tickCount={5}
-            tooltipFormatter={(p) =>
-              `${new Date(p.timestamp*1000).toLocaleString()}: ${p.value}°C`
-            }
+              label: { fontWeight: 500, color: "#ffffff", fontSize: "20px" },
+            })}
           />
         </div>
 
-        <LatestDataGauge
-          client={client}
-          nodeId={nodeId}
-          variable="temperature"
-          title="Temperature Sensor"
-          unit={"°C"}
-    
-          showNeedle={false}
-          styles={{
-            container: {
-              width: 350,
-              height: 200,
-              background:
-                "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
-              borderRadius: 10,
-              gap: 1,
-            },
-            label: { fontWeight: 500, color: "#ffffff", fontSize: "20px" },
-            value: { fontWeight: 700, fontSize: "30px", color: "#ffffff" },
-            unit: { fontWeight: 400, color: "#ffffff", fontSize: "30px" },
-            fontFamily: "Arial, sans-serif", // global font
+        <div
+          style={{
+            display: "flex",
+
+            alignItems: "center",
           }}
-        />
+        >
+          <LatestDataGauge
+            client={client}
+            nodeId={nodeId}
+            variable="humidity"
+            title="Humidity Sensor"
+            unit={"°C"}
+            showNeedle={false}
+            styles={({ value, loading, error }) => ({
+              container: {
+                background: loading
+                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
+                  : error
+                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
+                  : value > 80
+                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
+                  : "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
+                borderRadius: 10,
+                gap: 1,
+              },
+              value: {
+                fontWeight: 700,
+                fontSize: "30px",
+                color: "#ffffff",
+              },
+              unit: { fontWeight: 400, color: "#ffffff", fontSize: "30px" },
+              label: { fontWeight: 500, color: "#ffffff", fontSize: "20px" },
+            })}
+          />
+        </div>
       </div>
     </div>
   );
