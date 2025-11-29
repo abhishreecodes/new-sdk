@@ -87,12 +87,11 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
   colorRange,
   colorRangeCallback,
 }) => {
-
-   validateRequiredProps(
-    "LatestDataWidget",
-    { client, nodeId, variable },
-    ["client", "nodeId", "variable"]
-  );
+  validateRequiredProps("LatestDataWidget", { client, nodeId, variable }, [
+    "client",
+    "nodeId",
+    "variable",
+  ]);
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -136,11 +135,13 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
         if (!mountedRef.current) return; // <-- SAFE, stops state update if unmounted
 
         if (res.isSuccess && res.isDataAvailable) {
+
           setData(res.data?.value);
           setError("");
         } else {
           setData(null);
-          setError("No data available");
+          console.error("error fetching data:", res.error);
+          setError(res.error.errorMessage);
         }
         failureCountRef.current = 0; // reset on success
       } catch (err: any) {
@@ -227,7 +228,8 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
   return (
     <div style={mergedContainerSx}>
       {title && <h2 style={mergedLabelSx}>{title}</h2>}
-      <div style={mergedValueSx}>
+
+
         {loading ? (
           <div
             style={{
@@ -255,11 +257,31 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
           >
             {"error:" + " " + error}
           </div>
+        ) : !data ? (
+          <div
+            style={{
+              fontSize: "30px",
+              color: "#757575",
+              width: "100%",
+              height: "100%",
+              display: "flex", // <-- required
+              justifyContent: "center",
+              alignItems: "center",
+              background: "rgb(248, 249, 250)",
+              // border: "1px solid rgba(211, 216, 220, 1)",
+            }}
+          >
+            {"No data available"}
+          </div>
         ) : (
-          data ?? "--"
+          <>
+                <div style={mergedValueSx}>
+            {data}
+            {unit && <div style={mergedUnitSx}>{unit}</div>}
+            </div>
+          </>
         )}
-      </div>
-      {unit && <div style={mergedUnitSx}>{unit}</div>}
+  
     </div>
   );
 };

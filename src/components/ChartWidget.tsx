@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
+
 import { CSSProperties } from "react";
-import "../../src/index.css";
+import "../../src/index.css"
 import { validateRequiredProps } from "../helpers/validate";
 /* ------------------------ Types ------------------------ */
 export interface ChartDataPoint {
@@ -27,9 +28,9 @@ export interface ChartWidgetProps {
   client: any;
   nodeId: string;
   variable: string;
-  from: number;
-  to: number;
-  limit?: number;
+  from:number,
+  to:number,
+  limit?:number,
   title?: string;
   styles?: ChartStyleSet;
   tooltipFormatter?: (d: ChartDataPoint) => string;
@@ -38,9 +39,7 @@ export interface ChartWidgetProps {
 }
 
 /* ------------------------ Helpers ------------------------ */
-const normalizeSx = (
-  sx: Record<string, any> | undefined
-): Record<string, any> => {
+const normalizeSx = (sx: Record<string, any>  | undefined): Record<string, any> => {
   if (!sx) return {};
   if (Array.isArray(sx)) return Object.assign({}, ...sx);
   if (typeof sx === "function") return sx({}) as Record<string, any>;
@@ -50,6 +49,7 @@ const normalizeSx = (
 const toDateSafe = (ts: number): Date => {
   // If ts < 1e12, treat as seconds -> convert to ms
   if (ts < 1e12) return new Date(ts * 1000);
+
   return new Date(ts);
 };
 
@@ -58,50 +58,57 @@ const defaultFontFamily = "Roboto, sans-serif";
 
 const defaultStyles: Required<ChartStyleSet> = {
   container: {
-    width: 400,
-    height: 250,
-    padding: 2,
-    margin: 0,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    borderRadius: 6,
-    boxSizing: "border-box",
+      width: 400,
+   height: 250,
+   padding: 2,
+   margin: 0,
+   display: "flex",
+   flexDirection: "column",
+   justifyContent: "flex-start",
+   alignItems: "center",
+   borderRadius: 6,
+   boxSizing: "border-box",
 
-    background: "rgb(248, 249, 250)",
-    border: "1px solid rgba(211, 216, 220, 1)",
+   background: "rgb(248, 249, 250)",
+                border: "1px solid rgba(211, 216, 220, 1)",
+ 
 
     textAlign: "center",
-    fontFamily: defaultFontFamily,
+        fontFamily: defaultFontFamily,
   },
   title: {
     fontSize: "20px",
     fontWeight: 600,
     color: "rgba(0,0,0,0.75)",
     // marginBottom: 1,
-    fontFamily: defaultFontFamily,
+        fontFamily: defaultFontFamily,
   },
   tooltip: {
     background: "rgba(0,0,0,0.75)",
+
     color: "#ffffff",
+
     borderRadius: "6px",
     padding: "6px 10px",
     fontSize: "12px",
-    fontFamily: defaultFontFamily,
+        fontFamily: defaultFontFamily,
   },
   axis: {
     color: "#666",
     fontSize: "11px",
     fontFamily: "Roboto, sans-serif",
+
   },
   chart: {
     strokeColor: "#1e88e5",
     strokeWidth: 2,
     gradientColors: ["#1e88e5", "#90caf9"],
-    dotRadius: 4,
+       dotRadius: 4,
+
   },
+   
 };
+
 
 // ---- ChartWidget ----
 export const ChartWidget: React.FC<ChartWidgetProps> = ({
@@ -110,7 +117,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   variable,
   from,
   to,
-  limit = 100,
+  limit=100,
   title = "Latest Data",
   styles = {},
   tooltipFormatter = (d) =>
@@ -123,10 +130,11 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
       minute: "2-digit",
       hour12: true,
     })}: ${d.value}`,
-  tickCount = 4,
+      tickCount = 4,
   tickFormatter,
 }) => {
-    validateRequiredProps(
+
+   validateRequiredProps(
     "Chart Widget",
     { client, nodeId, variable,from,to },
     ["client", "nodeId", "variable","from time","to time"]
@@ -134,7 +142,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
 
   // Refs + state
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const tooltipNodeRef = useRef<HTMLDivElement | null>(null);
+   const tooltipNodeRef = useRef<HTMLDivElement | null>(null);
   const [data, setData] = useState<ChartDataPoint[]>([
     // { timestamp: Date.now() - 60000, value: 33 },
     // { timestamp: Date.now() - 30000, value: 44 },
@@ -143,6 +151,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [node, setNode] = useState<any>(null);
+
 
   const mountedRef = useRef(false);
   const failureCountRef = useRef(0);
@@ -165,7 +174,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   const strokeWidth = chartSx.strokeWidth ?? defaultStyles.chart.strokeWidth;
   const gradientColors =
     chartSx.gradientColors ?? defaultStyles.chart.gradientColors;
-  const dotRadius = chartSx.dotRadius ?? defaultStyles.chart.dotRadius;
+const dotRadius = chartSx.dotRadius ?? defaultStyles.chart.dotRadius;
   // ---- Fetch Node ----
   useEffect(() => {
     if (!client || !nodeId) return;
@@ -193,8 +202,8 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
         setError(null);
         // const currentTime = Date.now();
         // const twentyFourHoursAgo = currentTime - 86400 * 1000;
-        //1732420983000
-        //1763956983000
+//1732420983000
+//1763956983000
         const req = {
           variable,
           from: from,
@@ -209,9 +218,10 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
         if (res.isSuccess && res.isDataAvailable) {
           setData(res.data);
           setError("");
+
         } else {
-          console.warn("No data available");
-          setError("No data available");
+          console.error("error fetching data:", res.error);
+          setError(res.error.errorMessage);
         }
         failureCountRef.current = 0;
       } catch (err: any) {
@@ -231,7 +241,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     };
   }, [node, variable]);
 
-  /* ------------------------ D3 render (dots + line + area + tooltip + axes) ------------------------ */
+ /* ------------------------ D3 render (dots + line + area + tooltip + axes) ------------------------ */
   useEffect(() => {
     if (!svgRef.current) return;
     const svgEl = svgRef.current;
@@ -249,24 +259,19 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     const chartH = Math.max(10, height - margin.top - margin.bottom);
 
     // group
-    const g = svg
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
     // parse / convert timestamps to Date safely
     const dates = data.map((d) => toDateSafe(d.timestamp));
-    const x = d3
-      .scaleTime()
-      .domain(d3.extent(dates) as [Date, Date])
-      .range([0, chartW]);
+    const x = d3.scaleTime().domain(d3.extent(dates) as [Date, Date]).range([0, chartW]);
     const maxY = Math.max(10, d3.max(data, (d) => Number(d.value)) ?? 10);
     const y = d3.scaleLinear().domain([0, maxY]).nice().range([chartH, 0]);
 
     // gradient
-    const safeGradient = gradientColors ?? ["#1e88e5", "#90caf9"];
-    const safeStroke = strokeColor ?? "#1e88e5";
-    const safeWidth = strokeWidth ?? 2;
-    const safeDotRadius = dotRadius ?? 4;
+  const safeGradient = gradientColors ?? ["#1e88e5", "#90caf9"];
+  const safeStroke = strokeColor ?? "#1e88e5";
+  const safeWidth = strokeWidth ?? 2;
+  const safeDotRadius = dotRadius ?? 4
     const defs = svg.append("defs");
 
     const gradient = defs
@@ -295,10 +300,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
       .y1((d) => y(d.value))
       .curve(d3.curveMonotoneX);
 
-    g.append("path")
-      .datum(data)
-      .attr("fill", "url(#chartGradient)")
-      .attr("d", area);
+  g.append("path").datum(data).attr("fill", "url(#chartGradient)").attr("d", area);
 
     // line
     const line = d3
@@ -307,12 +309,12 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
       .y((d) => y(d.value))
       .curve(d3.curveMonotoneX);
 
-    g.append("path")
-      .datum(data)
-      .attr("fill", "none")
-      .attr("stroke", safeStroke)
-      .attr("stroke-width", safeWidth)
-      .attr("d", line);
+   g.append("path")
+    .datum(data)
+    .attr("fill", "none")
+    .attr("stroke", safeStroke)
+    .attr("stroke-width", safeWidth)
+    .attr("d", line);
 
     // dots
     const dotR = computeDotRadius(chartW, chartH, safeDotRadius);
@@ -341,16 +343,11 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     tooltipDiv.style.position = "absolute";
     tooltipDiv.style.pointerEvents = "none";
     tooltipDiv.style.opacity = "0";
-    tooltipDiv.style.background = (tooltipSx.background ??
-      tooltipDefaults.background) as string;
-    tooltipDiv.style.color = (tooltipSx.color ??
-      tooltipDefaults.color) as string;
-    tooltipDiv.style.borderRadius = (tooltipSx.borderRadius ??
-      tooltipDefaults.borderRadius) as string;
-    tooltipDiv.style.padding = (tooltipSx.padding ??
-      tooltipDefaults.padding) as string;
-    tooltipDiv.style.fontSize = (tooltipSx.fontSize ??
-      tooltipDefaults.fontSize) as string;
+    tooltipDiv.style.background = (tooltipSx.backgroundColor ?? tooltipDefaults.background) as string;
+    tooltipDiv.style.color = (tooltipSx.color ?? tooltipDefaults.color) as string;
+    tooltipDiv.style.borderRadius = (tooltipSx.borderRadius ?? tooltipDefaults.borderRadius) as string;
+    tooltipDiv.style.padding = (tooltipSx.padding ?? tooltipDefaults.padding) as string;
+    tooltipDiv.style.fontSize = (tooltipSx.fontSize ?? tooltipDefaults.fontSize) as string;
     tooltipDiv.style.transition = "opacity 120ms";
 
     // interactions
@@ -388,7 +385,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
         }).format(dt);
       });
 
-    const axisDefaults: any = defaultStyles.axis;
+      const axisDefaults : any = defaultStyles.axis
     g.append("g")
       .attr("transform", `translate(0,${chartH})`)
       .call(xAxis)
@@ -397,20 +394,14 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
       .style("text-anchor", "end")
       .style("font-size", (axisSx.fontSize ?? axisDefaults.fontSize) as string)
       .style("fill", (axisSx.color ?? axisDefaults.color) as string)
-      .style(
-        "font-family",
-        (axisSx.fontFamily ?? axisDefaults.fontFamily) as string
-      );
+      .style("font-family", (axisSx.fontFamily ?? axisDefaults.fontFamily) as string);
 
     g.append("g")
       .call(d3.axisLeft(y).ticks(5))
       .selectAll("text")
       .style("font-size", (axisSx.fontSize ?? axisDefaults.fontSize) as string)
       .style("fill", (axisSx.color ?? axisDefaults.color) as string)
-      .style(
-        "font-family",
-        (axisSx.fontFamily ?? axisDefaults.fontFamily) as string
-      );
+      .style("font-family", (axisSx.fontFamily ?? axisDefaults.fontFamily) as string);
 
     // keep axes inside container by clipping overflow
     // Add clipPath so elements don't overflow container boundaries visually
@@ -502,7 +493,20 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
           }}>
 {     "error:"+" "+error}
           </div>
-      ) : (
+      ) : data?.length === 0?
+       <div style={{
+           fontSize: "30px",
+   color:"#757575",
+    width: "100%",
+    height: "100%",
+    display: "flex",           // <-- required
+    justifyContent: "center",
+    alignItems: "center",
+
+          }}>
+{     "No data available"}
+          </div>:
+       (
         <svg
           ref={svgRef}
           width={width as number}
