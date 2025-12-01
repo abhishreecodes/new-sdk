@@ -530,3 +530,19 @@ const dotRadius = chartSx.dotRadius ?? defaultStyles.chart.dotRadius;
     </div>
   );
 };
+
+//add customizable toolips, stroke width and color, and title obvs , timestamps for get data request
+//match customization and failsafes to latest data
+//documentation
+//modify anedya client as well
+//adjust rateLimitMs
+//how do i also ensure that the y axis labels dont crpss the container card border , all labels are contained within th container card
+
+//ftick format functions
+//responsiveness
+//frequesncy of ticks
+//show all widgets
+//documentation
+//consistent widget default styling , default color palette and theme
+//beta launch
+//how to add docs in npm --- add them in read me

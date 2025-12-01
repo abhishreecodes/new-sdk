@@ -29,7 +29,6 @@ function App() {
         <div
           style={{
             display: "flex",
-
             alignItems: "center",
           }}
         >
@@ -41,15 +40,12 @@ function App() {
             to={1763956983000}
             limit={40}
             title="Humidity Trend"
-            styles={({ data, loading, error }) => ({
+            styles={{
               container: {
-                background: loading
-                  ? "rgb(248, 249, 250)"
-                  : error
-                  ? "rgb(248, 249, 250)"
-                  : "rgb(248, 249, 250)",
+                background: "rgb(248, 249, 250)",
                 borderRadius: 6,
                 border: "1px solid rgba(211, 216, 220, 1)",
+                padding: 10,
               },
               title: { color: "#000000", fontSize: "18px" },
               chart: {
@@ -58,11 +54,11 @@ function App() {
                 gradientColors: ["rgba(0, 143, 251, 0.85)", "#ffe0b2"],
               },
               tooltip: {
-                backgroundColor: "rgba(148, 54, 54, 0.75)",
+                backgroundColor: "rgba(0,0,0,0.75)",
                 color: "#fff",
                 fontSize: "13px",
               },
-            })}
+            }}
             tickCount={5}
             tooltipFormatter={(p) =>
               `${new Date(p.timestamp * 1000).toLocaleString()}: ${p.value}°C`
@@ -83,27 +79,20 @@ function App() {
             variable="humidity"
             title="Humidity Sensor"
             unit={"°C"}
-            styles={({ value, loading, error }) => ({
+            styles={{
               container: {
-                background: loading
-                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
-                  : error
-                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
-                  : value > 80
-                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
-                  : "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
+                background:
+                  "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
+
                 borderRadius: 10,
                 gap: 1,
+                padding: "20px",
               },
-              value: {
-                color: value > 80 ? "yellow" : "white",
-                fontSize: value > 100? "40px" : "100px",
-                fontWeight: 700,
-                color: "#ffffff",
-              },
-              unit: { fontWeight: 400, color: "#ffffff", fontSize: "30px" },
               label: { fontWeight: 500, color: "#ffffff", fontSize: "20px" },
-            })}
+              value: { fontWeight: 700, fontSize: "100px" },
+              unit: { fontWeight: 400, color: "#ffffff", fontSize: "30px" },
+              fontFamily: "Arial, sans-serif", // global font
+            }}
           />
         </div>
 
@@ -121,26 +110,18 @@ function App() {
             title="Humidity Sensor"
             unit={"°C"}
             showNeedle={false}
-            styles={({ value, loading, error }) => ({
+            styles={{
               container: {
-                background: loading
-                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
-                  : error
-                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
-                  : value > 80
-                  ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
-                  : "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
+                background:
+                  "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
                 borderRadius: 10,
                 gap: 1,
               },
-              value: {
-                fontWeight: 700,
-                fontSize: "30px",
-                color: "#ffffff",
-              },
-              unit: { fontWeight: 400, color: "#ffffff", fontSize: "30px" },
               label: { fontWeight: 500, color: "#ffffff", fontSize: "20px" },
-            })}
+              value: { fontWeight: 700, fontSize: "30px", color: "#ffffff" },
+              unit: { fontWeight: 400, color: "#ffffff", fontSize: "30px" },
+              fontFamily: "Arial, sans-serif", // global font
+            }}
           />
         </div>
       </div>

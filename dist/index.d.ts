@@ -49,6 +49,11 @@ interface ChartDataPoint {
     timestamp: number;
     value: number;
 }
+type WidgetState$1 = {
+    value?: any;
+    loading?: boolean;
+    error?: string | null;
+};
 interface ChartStyleSet {
     container?: CSSProperties;
     title?: CSSProperties;
@@ -61,12 +66,16 @@ interface ChartStyleSet {
         dotRadius?: number;
     };
 }
+type StylesInput$1 = ChartStyleSet | ((state: WidgetState$1) => ChartStyleSet);
 interface ChartWidgetProps {
-    client?: any;
-    nodeId?: string;
-    variable?: string;
+    client: any;
+    nodeId: string;
+    variable: string;
+    from: number;
+    to: number;
+    limit?: number;
     title?: string;
-    styles?: ChartStyleSet;
+    styles?: StylesInput$1;
     tooltipFormatter?: (d: ChartDataPoint) => string;
     tickCount?: number;
     tickFormatter?: (d: Date) => string;
@@ -78,6 +87,11 @@ interface Zone {
     to: number;
     color: string;
 }
+type WidgetState = {
+    value?: any;
+    loading?: boolean;
+    error?: string | null;
+};
 interface GaugeStyleSet {
     container?: CSSProperties;
     title?: CSSProperties;
@@ -85,6 +99,7 @@ interface GaugeStyleSet {
     subtitle?: CSSProperties;
     arc?: CSSProperties;
 }
+type StylesInput = GaugeStyleSet | ((state: WidgetState) => GaugeStyleSet);
 interface GaugeMetrics {
     maxRadius: number;
     valueAngleDeg: number;
@@ -97,13 +112,13 @@ interface GaugeMetrics {
     cy: number;
 }
 interface GaugeWidgetProps {
-    value?: number;
+    client: any;
+    nodeId: string;
+    variable: string;
     min?: number;
     max?: number;
     startAngleDeg?: number;
     endAngleDeg?: number;
-    width?: number;
-    height?: number;
     thickness?: number;
     zones?: Zone[];
     showNeedle?: boolean;
@@ -111,7 +126,7 @@ interface GaugeWidgetProps {
     needleWidth?: number;
     title?: string;
     subtitle?: string;
-    styles?: GaugeStyleSet;
+    styles?: StylesInput;
     disabled?: boolean;
     tickCount?: number;
     uom?: string;
