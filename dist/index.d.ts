@@ -32,15 +32,15 @@ interface StyleSet {
     value?: CSSProperties;
     unit?: CSSProperties;
 }
-type UnitPosition = "left" | "right" | "top" | "bottom";
-type UnitStyle = "normal" | "subscript" | "superscript";
-interface DisplayTextResult {
+type UnitPosition$1 = "left" | "right" | "top" | "bottom";
+type UnitStyle$1 = "normal" | "subscript" | "superscript";
+interface DisplayTextResult$1 {
     text: string;
     unitText?: string;
-    position?: UnitPosition;
-    unitStyle?: UnitStyle;
+    position?: UnitPosition$1;
+    unitStyle?: UnitStyle$1;
 }
-type DisplayTextFormatter = (value: number, unit?: string) => DisplayTextResult;
+type DisplayTextFormatter$1 = (value: number, unit?: string) => DisplayTextResult$1;
 interface LatestDataComponentProps {
     client: AnedyaClient;
     nodeId: string;
@@ -51,7 +51,7 @@ interface LatestDataComponentProps {
     colorRange?: typeof defaultColorRanges;
     colorRangeCallback?: (value: number, defaultColor: string) => string;
     fontFamily?: string;
-    displayText?: DisplayTextFormatter;
+    displayText?: DisplayTextFormatter$1;
     onStyleChange?: (value: number) => {};
 }
 declare const LatestDataComponent: React.FC<LatestDataComponentProps>;
@@ -76,6 +76,7 @@ interface ChartStyleSet {
         gradientColors?: [string, string];
         dotRadius?: number;
     };
+    fontFamily: string;
 }
 type StylesInput$1 = ChartStyleSet | ((state: WidgetState$1) => ChartStyleSet);
 interface ChartWidgetProps {
@@ -163,7 +164,17 @@ interface GaugeWidgetProps {
         valueMax: number;
     }) => string;
     onStyleChange?: (value: number) => {};
+    displayText?: DisplayTextFormatter;
 }
+type UnitPosition = "left" | "right" | "top" | "bottom";
+type UnitStyle = "normal" | "subscript" | "superscript";
+interface DisplayTextResult {
+    text: string;
+    unitText?: string;
+    position?: UnitPosition;
+    unitStyle?: UnitStyle;
+}
+type DisplayTextFormatter = (value: number, unit?: string) => DisplayTextResult;
 declare const LatestDataGauge: React.FC<GaugeWidgetProps>;
 
 export { ChartWidget, LatestDataComponent, LatestDataGauge, initAnedyaClient };
