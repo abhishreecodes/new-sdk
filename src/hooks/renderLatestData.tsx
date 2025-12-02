@@ -19,6 +19,22 @@ interface StyleSet {
   unit?: CSSProperties;
 }
 
+type UnitPosition = "left" | "right" | "top" | "bottom";
+type UnitStyle = "normal" | "subscript" | "superscript";
+
+interface DisplayTextResult {
+  text: string;
+  unitText?: string;
+  position?: UnitPosition;
+  unitStyle?: UnitStyle;
+}
+
+type DisplayTextFormatter = (
+  value: number,
+  unit?: string
+) => DisplayTextResult;
+
+
 interface LatestDataComponentProps {
  client: AnedyaClient;
   nodeId: string;
@@ -28,7 +44,9 @@ interface LatestDataComponentProps {
   styles?: StyleSet;
   colorRange?: typeof defaultColorRanges;
   colorRangeCallback?: (value: number, defaultColor: string) => string;
-  fontFamily? : string
+  fontFamily? : string;
+  displayText?: DisplayTextFormatter;
+  onStyleChange?:(value:number)=>{}
 }
 
 export const LatestDataComponent: React.FC<LatestDataComponentProps> = React.memo((
@@ -41,12 +59,15 @@ export const LatestDataComponent: React.FC<LatestDataComponentProps> = React.mem
   styles = {},
   colorRange,
   colorRangeCallback,
+  displayText,
+  onStyleChange
   } 
 ) => {
   return (
     <>
-    
+   
         <LatestDataWidget
+        displayText={displayText}
          client={client}
   nodeId={nodeId}
   variable={variable}
@@ -55,6 +76,7 @@ export const LatestDataComponent: React.FC<LatestDataComponentProps> = React.mem
   styles = {styles}
   colorRange={colorRange}
   colorRangeCallback={colorRangeCallback}
+  onStyleChange={onStyleChange}
         />
       
     </>

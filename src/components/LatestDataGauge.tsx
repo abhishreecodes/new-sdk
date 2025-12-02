@@ -22,6 +22,29 @@ const normalizeSx = (
   if (typeof sx === "function") return sx({}) as Record<string, any>;
   return sx as Record<string, any>;
 };
+const defaultFontFamily = "Roboto, sans-serif";
+
+interface GaugeArcStyle {
+  trackColor?: string;
+  progressColor?: string;
+  progressStroke?: string;
+  fontSize?: string | number;
+  fontFamily?: string;
+}
+
+const defaultArcSx: GaugeArcStyle = {
+  trackColor: "#e6e6e6",        // light background arc
+  progressColor: "#4caf50",     // the “filled” arc part
+  progressStroke: "none",
+  fontSize: "20px",
+  fontFamily: defaultFontFamily,
+};
+const defaultSubtitleSx: CSSProperties = {
+  fontSize: "12px",
+  color: "#666",
+  fontFamily: defaultFontFamily,
+};
+
 
 /* ---------------------- Types ---------------------- */
 
@@ -38,10 +61,12 @@ type WidgetState = {
 
 export interface GaugeStyleSet {
   container?: CSSProperties;
-  title?: CSSProperties;
-  valueText?: CSSProperties;
-  subtitle?: CSSProperties;
-  arc?: CSSProperties;
+  label?: CSSProperties;
+  value?: CSSProperties;
+  unit?: CSSProperties;
+subtitle?: CSSProperties;
+  arc?: GaugeArcStyle;   
+    fontFamily?: string; // optional global font family for all 3
 }
 
 
@@ -81,7 +106,7 @@ export interface GaugeWidgetProps {
 styles?: StylesInput;
   disabled?: boolean; //for pointer label
   tickCount?: number;
-  uom?: string;
+  unit?: string;
   uomOffset?: number;
   labelOffset?: number;
   // callback to receive computed values (optional)
@@ -92,6 +117,7 @@ styles?: StylesInput;
     valueMin: number;
     valueMax: number;
   }) => string;
+   onStyleChange?:(value:number) =>{}
 }
 
 /* ---------------------- Defaults ---------------------- */
@@ -101,7 +127,7 @@ const defaultZones: Zone[] = [
   { from: 40, to: 60, color: "#ffeb3b" }, // yellow
   { from: 60, to: 100, color: "#f44336" }, // red
 ];
-const defaultFontFamily = "Roboto, sans-serif";
+
 
 const defaultContainerSx: CSSProperties = {
      width: 400,
@@ -114,10 +140,14 @@ const defaultContainerSx: CSSProperties = {
    alignItems: "center",
    borderRadius: 10,
    boxSizing: "border-box",
-  background: 'linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))',
-
+  background:  "rgb(248, 249, 250)",
+      border: "1px solid rgba(211, 216, 220, 1)",
+//'linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))'
     fontFamily: defaultFontFamily,
-    color:"#ffffff"
+    color:"#000000",
+ overflowWrap: "break-word",
+
+    
 };
 
 // --- Circuit Breaker Config ---
@@ -143,12 +173,13 @@ export const LatestDataGauge: React.FC<GaugeWidgetProps> = ({
   styles = {},
   disabled = false,
   tickCount = 11,
-  uom = "Units",
+  unit = "Units",
   uomOffset = -15,
   labelOffset = -7,
   onMetrics,
   valueText = ({ value: v, valueMin, valueMax }) =>
     v === undefined ? `-- / ${valueMax}` : `${v} / ${valueMax}`,
+  onStyleChange,
 }) => {
 
      validateRequiredProps(
@@ -167,11 +198,23 @@ export const LatestDataGauge: React.FC<GaugeWidgetProps> = ({
      // Build a state object to pass into the callback styles
 const widgetState = { value, loading, error };
 
+
 // Resolve function or static style object
-const resolvedStyles =
+const [dynamicStyles, setDynamicStyles] = useState<Partial<GaugeStyleSet>>({});
+
+const baseResolvedStyles =
   typeof styles === "function" ? styles(widgetState) : styles || {};
 
+const resolvedStyles = {
+  container: { ...baseResolvedStyles.container, ...dynamicStyles?.container },
+  label: { ...baseResolvedStyles.label, ...dynamicStyles?.label },
+  value: { ...baseResolvedStyles.value, ...dynamicStyles?.value },
+  unit: { ...baseResolvedStyles.unit, ...dynamicStyles?.unit },
+  fontFamily: dynamicStyles?.fontFamily ?? baseResolvedStyles.fontFamily,
+   subtitle: { ...defaultSubtitleSx, ...baseResolvedStyles.subtitle, ...dynamicStyles.subtitle },
+  arc: { ...defaultArcSx, ...baseResolvedStyles.arc, ...dynamicStyles.arc },
 
+};
    // --- Preventing stale closures / infinite renders ---
    
      const isFetchingRef = useRef(false);
@@ -181,9 +224,10 @@ const resolvedStyles =
 
   // normalize style objects
   const containerSx = normalizeSx(resolvedStyles.container);
-  const titleSx = normalizeSx(resolvedStyles.title);
-  const valueTextSx = normalizeSx(resolvedStyles.valueText);
+  const titleSx = normalizeSx(resolvedStyles.label);
+  const valueTextSx = normalizeSx(resolvedStyles.value);
   const subtitleSx = normalizeSx(resolvedStyles.subtitle);
+  const unitSx =  normalizeSx(resolvedStyles.unit);
   const arcSx = normalizeSx(resolvedStyles.arc);
 
 
@@ -272,6 +316,7 @@ const resolvedStyles =
 
         setValue(res.data?.value);
         setError("");
+          //  setValue(null);
       } else {
         setValue(null);
          console.error("error fetching data:", res.error);
@@ -298,6 +343,16 @@ const resolvedStyles =
     };
     
   }, [node, variable]);
+
+    // Whenever value changes, allow user to modify styles dynamically
+ useEffect(() => {
+    if (typeof onStyleChange === "function") {
+      const updated = onStyleChange(value);
+      if (updated && typeof updated === "object") {
+        setDynamicStyles(updated);
+      }
+    }
+  }, [value]);
 
 
 
@@ -501,13 +556,14 @@ const resolvedStyles =
     ...containerSx,
     width,
     height,
+  
   };
 
   return (
     
     <div style={{...mergedContainer}}>
       {title && (
-        <h2 style={{ ...((resolvedStyles.title as any) ?? {}), ...titleSx }}>
+        <h2 style={{ ...((resolvedStyles.label as any) ?? {}), ...titleSx }}>
           {title}
         </h2>
       )}
@@ -532,15 +588,30 @@ const resolvedStyles =
         ) : error ? (
           
        <div style={{
-              fontSize: "30px",
-    color: "red",
-    width: "100%",
-    height: "100%",
+              fontSize: "25px",
     display: "flex",           // <-- required
     justifyContent: "center",
     alignItems: "center",
-          }}>
-{     "error:"+" "+error}
+height:"100%",
+paddingRight:"10px",
+paddingLeft:"10px"
+          }}
+          >
+            <div
+            style={{
+              background:"red",
+              boxShadow:'rgba(149, 157, 165, 0.2) 0px 8px 24px',
+          
+              color:"#ffffff",
+              textAlign:"center",
+              borderRadius:"5px",
+              padding:"5px",
+   
+            }}
+            >
+{"error:"+" "+error}
+            </div>
+
           </div>
     
    
@@ -556,7 +627,7 @@ const resolvedStyles =
         disabled={disabled}
         pointerLabel={disabled ? "Disabled" : value + ""}
         tickCount={Number(tickCount)}
-        uom={uom}
+        uom={unit}
         uomProps={{
           offsetText: uomOffset,
         }}
@@ -566,20 +637,36 @@ const resolvedStyles =
         arcSegments={arcSegments}
       />
         ):  !value?
-       <div style={{
-           fontSize: "30px",
-   color:"#757575",
-    width: "100%",
-    height: "100%",
+   
+
+                <div style={{
+              fontSize: "25px",
     display: "flex",           // <-- required
     justifyContent: "center",
     alignItems: "center",
-     background: "rgb(248, 249, 250)",
-                // border: "1px solid rgba(211, 216, 220, 1)",
+height:"100%",
+paddingRight:"10px",
+paddingLeft:"10px"
+          }}
+          >
+            <div
+            style={{
 
-          }}>
+    
+          
+        color:"#757575",
+              textAlign:"center",
+              borderRadius:"5px",
+              padding:"5px",
+   
+            }}
+            >
 {     "No data available"}
-          </div>:<></>}
+            </div>
+
+          </div>
+
+         :<></>}
     
     </div>
   );

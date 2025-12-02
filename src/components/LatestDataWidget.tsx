@@ -15,6 +15,21 @@ type WidgetState = {
   error?: string|null;
 };
 
+type UnitPosition = "left" | "right" | "top" | "bottom";
+type UnitStyle = "normal" | "subscript" | "superscript";
+
+interface DisplayTextResult {
+  text: string;
+  unitText?: string;
+  position?: UnitPosition;
+  unitStyle?: UnitStyle;
+}
+
+type DisplayTextFormatter = (
+  value: number,
+  unit?: string
+) => DisplayTextResult;
+
 // --- Default styles ---
 interface StyleSet {
   container?: CSSProperties;
@@ -45,15 +60,19 @@ const defaultStyles: Required<StyleSet> = {
     alignItems: "center",
     borderRadius: 10,
     boxSizing: "border-box",
-    background:
-      "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
+  background:  "rgb(248, 249, 250)",
+      border: "1px solid rgba(211, 216, 220, 1)",
+//'linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))'
+    fontFamily: defaultFontFamily,
+    color:"#000000",
     gap: 2,
     textAlign: "center",
   },
-  label: { fontWeight: 500, color: "#ffffff", fontFamily: defaultFontFamily },
-  value: { fontWeight: 700, color: "#ffffff", fontFamily: defaultFontFamily },
-  unit: { fontWeight: 400, color: "#ffffff", fontFamily: defaultFontFamily },
+  label: { fontWeight: 500, color: "#000000", fontFamily: defaultFontFamily },
+  value: { fontWeight: 700, color: "#000000", fontFamily: defaultFontFamily },
+  unit: { fontWeight: 400, color: "#000000", fontFamily: defaultFontFamily },
   fontFamily: defaultFontFamily,
+          
 };
 
 // --- Helper: get color from range ---
@@ -86,8 +105,10 @@ interface WidgetProps {
   title?: string;
   unit?: string;
   styles?: StylesInput;
+  displayText?: DisplayTextFormatter;
   colorRange?: typeof defaultColorRanges;
   colorRangeCallback?: (value: number, defaultColor: string) => string;
+  onStyleChange?:(value:number) =>{}
 }
 
 export const LatestDataWidget: React.FC<WidgetProps> = ({
@@ -97,14 +118,17 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
   title = "Latest Data",
   unit = "",
   styles = {},
+  displayText,
   colorRange,
   colorRangeCallback,
+  onStyleChange
 }) => {
   validateRequiredProps("LatestDataWidget", { client, nodeId, variable }, [
     "client",
     "nodeId",
     "variable",
   ]);
+
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -122,9 +146,29 @@ export const LatestDataWidget: React.FC<WidgetProps> = ({
 const widgetState = { data, loading, error };
 
 // Resolve function or static style object
-const resolvedStyles =
+const [dynamicStyles, setDynamicStyles] = useState<Partial<StyleSet>>({});
+
+const baseResolvedStyles =
   typeof styles === "function" ? styles(widgetState) : styles || {};
 
+const resolvedStyles = {
+  container: { ...baseResolvedStyles.container, ...dynamicStyles?.container },
+  label: { ...baseResolvedStyles.label, ...dynamicStyles?.label },
+  value: { ...baseResolvedStyles.value, ...dynamicStyles?.value },
+  unit: { ...baseResolvedStyles.unit, ...dynamicStyles?.unit },
+  fontFamily: dynamicStyles?.fontFamily ?? baseResolvedStyles.fontFamily,
+};
+const formatted: DisplayTextResult = displayText
+  ? displayText(Number(data), unit)
+  : {
+      text: String(data ?? ""),
+      unitText: unit,
+      position: "right",
+      unitStyle: "normal",
+    };
+
+
+ 
 
   useEffect(() => {
     if (client && nodeId) {
@@ -184,6 +228,17 @@ const resolvedStyles =
     };
   }, [node, variable]);
 
+
+    // Whenever value changes, allow user to modify styles dynamically
+ useEffect(() => {
+    if (typeof onStyleChange === "function") {
+      const updated = onStyleChange(data);
+      if (updated && typeof updated === "object") {
+        setDynamicStyles(updated);
+      }
+    }
+  }, [data]);
+
   // --- Normalize styles ---
   const containerSx = normalizeSx(resolvedStyles?.container);
   const labelSx = normalizeSx(resolvedStyles?.label);
@@ -225,7 +280,9 @@ const resolvedStyles =
   const mergedContainerSx: CSSProperties = {
     ...defaultStyles.container,
     ...containerSx,
+  
     gap: containerGap,
+
   };
   const mergedLabelSx: CSSProperties = {
     ...defaultStyles.label,
@@ -246,8 +303,28 @@ const resolvedStyles =
     ...unitSx,
     fontFamily: unitFontFamily,
   };
+
+
+  const renderUnitText = (text: string, style: UnitStyle) => {
+  switch (style) {
+    case "superscript":
+      return <sup>{text}</sup>;
+    case "subscript":
+      return <sub>{text}</sub>;
+    default:
+      return <span>{text}</span>;
+  }
+};
+
+
   return (
-    <div style={mergedContainerSx}>
+
+        <div
+        style={{
+    ...mergedContainerSx,
+   
+  }}
+    >
       {title && <h2 style={mergedLabelSx}>{title}</h2>}
 
 
@@ -270,40 +347,118 @@ const resolvedStyles =
             ></div>
           </div>
         ) : error ? (
-          <div
-            style={{
-              fontSize: "30px",
-              color: "red",
-            }}
+         <div style={{
+              fontSize: "25px",
+    display: "flex",           // <-- required
+    justifyContent: "center",
+    alignItems: "center",
+height:"100%",
+paddingRight:"10px",
+paddingLeft:"10px"
+          }}
           >
-            {"error:" + " " + error}
+            <div
+            style={{
+              background:"red",
+              boxShadow:'rgba(149, 157, 165, 0.2) 0px 8px 24px',
+          
+              color:"#ffffff",
+              textAlign:"center",
+              borderRadius:"5px",
+              padding:"5px",
+   
+            }}
+            >
+{"error:"+" "+error}
+            </div>
+
           </div>
         ) : !data ? (
-          <div
-            style={{
-              fontSize: "30px",
-              color: "#757575",
-              width: "100%",
-              height: "100%",
-              display: "flex", // <-- required
-              justifyContent: "center",
-              alignItems: "center",
-              background: "rgb(248, 249, 250)",
-              // border: "1px solid rgba(211, 216, 220, 1)",
-            }}
+                   <div style={{
+              fontSize: "25px",
+    display: "flex",           // <-- required
+    justifyContent: "center",
+    alignItems: "center",
+height:"100%",
+paddingRight:"10px",
+paddingLeft:"10px"
+          }}
           >
-            {"No data available"}
+            <div
+            style={{
+
+    
+          
+        color:"#757575",
+              textAlign:"center",
+              borderRadius:"5px",
+              padding:"5px",
+   
+            }}
+            >
+{     "No data available"}
+            </div>
+
           </div>
         ) : (
           <>
-                <div style={mergedValueSx}>
-            {data}
-            {unit && <div style={mergedUnitSx}>{unit}</div>}
+                <div 
+                
+                style={{...
+                  mergedValueSx,
+                   display: "flex",
+    flexDirection:
+      formatted.position === "top" || formatted.position === "bottom"
+        ? "column"
+        : "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4}}
+    >
+        
+ {/* Unit LEFT */}
+  {formatted.unitText &&
+    formatted.position === "left" &&
+    <div style={mergedUnitSx}>
+
+      {renderUnitText(formatted.unitText, formatted.unitStyle!)}
+    </div>
+  }
+
+  {/* VALUE */}
+  <div>{formatted.text}</div>
+
+  {/* Unit RIGHT */}
+  {formatted.unitText &&
+    formatted.position === "right" &&
+    <div style={mergedUnitSx}>
+            
+      {renderUnitText(formatted.unitText, formatted.unitStyle!)}
+    </div>
+  }
+
+  {/* Unit TOP */}
+  {formatted.unitText &&
+    formatted.position === "top" &&
+    <div style={{ ...mergedUnitSx, order: -1 }}>
+      {renderUnitText(formatted.unitText, formatted.unitStyle!)}
+    </div>
+  }
+
+  {/* Unit BOTTOM */}
+  {formatted.unitText &&
+    formatted.position === "bottom" &&
+    <div style={{ ...mergedUnitSx, order: 1 }}>
+      {renderUnitText(formatted.unitText, formatted.unitStyle!)}
+    </div>
+  }
             </div>
           </>
         )}
   
     </div>
+
+
   );
 };
 

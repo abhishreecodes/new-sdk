@@ -32,6 +32,15 @@ interface StyleSet {
     value?: CSSProperties;
     unit?: CSSProperties;
 }
+type UnitPosition = "left" | "right" | "top" | "bottom";
+type UnitStyle = "normal" | "subscript" | "superscript";
+interface DisplayTextResult {
+    text: string;
+    unitText?: string;
+    position?: UnitPosition;
+    unitStyle?: UnitStyle;
+}
+type DisplayTextFormatter = (value: number, unit?: string) => DisplayTextResult;
 interface LatestDataComponentProps {
     client: AnedyaClient;
     nodeId: string;
@@ -42,6 +51,8 @@ interface LatestDataComponentProps {
     colorRange?: typeof defaultColorRanges;
     colorRangeCallback?: (value: number, defaultColor: string) => string;
     fontFamily?: string;
+    displayText?: DisplayTextFormatter;
+    onStyleChange?: (value: number) => {};
 }
 declare const LatestDataComponent: React.FC<LatestDataComponentProps>;
 
@@ -79,9 +90,20 @@ interface ChartWidgetProps {
     tooltipFormatter?: (d: ChartDataPoint) => string;
     tickCount?: number;
     tickFormatter?: (d: Date) => string;
+    xTickFormat?: string | ((d: Date) => string);
+    yTickFormat?: string | ((v: number) => string);
+    tooltipFormat?: string | ((d: ChartDataPoint) => string);
+    onStyleChange?: (data: ChartDataPoint[]) => {};
 }
 declare const ChartWidget: React.FC<ChartWidgetProps>;
 
+interface GaugeArcStyle {
+    trackColor?: string;
+    progressColor?: string;
+    progressStroke?: string;
+    fontSize?: string | number;
+    fontFamily?: string;
+}
 interface Zone {
     from: number;
     to: number;
@@ -94,10 +116,12 @@ type WidgetState = {
 };
 interface GaugeStyleSet {
     container?: CSSProperties;
-    title?: CSSProperties;
-    valueText?: CSSProperties;
+    label?: CSSProperties;
+    value?: CSSProperties;
+    unit?: CSSProperties;
     subtitle?: CSSProperties;
-    arc?: CSSProperties;
+    arc?: GaugeArcStyle;
+    fontFamily?: string;
 }
 type StylesInput = GaugeStyleSet | ((state: WidgetState) => GaugeStyleSet);
 interface GaugeMetrics {
@@ -129,7 +153,7 @@ interface GaugeWidgetProps {
     styles?: StylesInput;
     disabled?: boolean;
     tickCount?: number;
-    uom?: string;
+    unit?: string;
     uomOffset?: number;
     labelOffset?: number;
     onMetrics?: (metrics: GaugeMetrics) => void;
@@ -138,6 +162,7 @@ interface GaugeWidgetProps {
         valueMin: number;
         valueMax: number;
     }) => string;
+    onStyleChange?: (value: number) => {};
 }
 declare const LatestDataGauge: React.FC<GaugeWidgetProps>;
 
