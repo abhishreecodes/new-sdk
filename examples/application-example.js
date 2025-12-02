@@ -103,28 +103,7 @@ function App() {
             variable="humidity"
             title="Humidity Sensor"
             unit={"°C"}
-            // styles={({ value, loading, error }) => ({
-            //   container: {
-            //     background: loading
-            //       ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
-            //       : error
-            //       ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
-            //       : value > 80
-            //       ? "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))"
-            //       : "linear-gradient(to right, rgb(47, 99, 255), rgb(20, 110, 180))",
-            //     borderRadius: 10,
-            //     gap: 1,
-            //   },
-            //   value: {
-            //     color: value > 80 ? "yellow" : "white",
-            //     fontSize: value > 100? "40px" : "100px",
-            //     fontWeight: 700,
-            //     color: "#ffffff",
-            //   },
-            //   unit: { fontWeight: 400, color: "#ffffff", fontSize: "30px" },
-            //   label: { fontWeight: 500, color: "#ffffff", fontSize: "20px" },
-            // })}
-
+           
             styles={{
               container: {
                 // width: 350,

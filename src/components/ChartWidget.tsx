@@ -44,6 +44,7 @@ interface ChartStyleSet {
     gradientColors?: [string, string];
     dotRadius?: number;
   };
+  fontFamily:string
 }
 type StylesInput =
   | ChartStyleSet
@@ -106,7 +107,7 @@ gap:0,
         fontFamily: defaultFontFamily,
   },
   title: {
-    fontSize: "20px",
+  
     fontWeight: 600,
     color: "rgba(0,0,0,0.75)",
     // marginBottom: 1,
@@ -125,7 +126,7 @@ gap:0,
   axis: {
     color: "#666",
     fontSize: "11px",
-    fontFamily: "Roboto, sans-serif",
+    fontFamily:defaultFontFamily,
 
   },
   chart: {
@@ -135,7 +136,7 @@ gap:0,
        dotRadius: 4,
 
   },
-  
+   fontFamily:defaultFontFamily
 
    
 };
@@ -219,6 +220,7 @@ const resolvedStyles = {
   tooltip: { ...baseResolvedStyles.tooltip, ...dynamicStyles?.tooltip },
   chart: { ...baseResolvedStyles.chart, ...dynamicStyles?.chart },
   axis:  { ...baseResolvedStyles.axis, ...dynamicStyles?.axis },
+  fontFamily: dynamicStyles?.fontFamily ?? baseResolvedStyles.fontFamily,
 };
   const mountedRef = useRef(false);
   const failureCountRef = useRef(0);
@@ -237,6 +239,24 @@ const resolvedStyles = {
   const width = containerSx.width ?? containerDefaults.width;
   const height = containerSx.height ?? containerDefaults.height;
 
+
+  // --- Font family handling ---
+  const globalFontFamily = resolvedStyles?.fontFamily ?? "Roboto";
+  const labelFontFamily = titleSx.fontFamily ??  globalFontFamily;
+
+
+  
+
+
+
+
+  // --- Scaled font sizes ---
+  const baseFont = Math.min(Number(width), Number(height)) * 0.15;
+
+  // --- Compute font sizes dynamically if not provided by user ---
+  const labelFont = (resolvedStyles?.title as any)?.fontSize ?? baseFont * 0.6;
+
+  
   const strokeColor = chartSx.strokeColor ?? defaultStyles.chart.strokeColor;
   const strokeWidth = chartSx.strokeWidth ?? defaultStyles.chart.strokeWidth;
   const gradientColors =
@@ -345,7 +365,7 @@ const dotRadius = chartSx.dotRadius ?? defaultStyles.chart.dotRadius;
 
     //.attr("transform", "rotate(-30)")
 //margins (leave extra bottom space for rotated ticks)
-    const margin = { top: 20, right: 20, bottom: 110, left: 50 };
+    const margin = { top: 20, right: 20, bottom: 130, left: 50 };
     const chartW = Math.max(10, width - margin.left - margin.right);
     const chartH = Math.max(10, height - margin.top - margin.bottom);
 
@@ -548,15 +568,26 @@ const dotRadius = chartSx.dotRadius ?? defaultStyles.chart.dotRadius;
     const base = Math.max(2, Math.min(chartW, chartH) * 0.012);
     return requested ?? Math.round(base);
   }
+  // --- Merge styles safely ---
+  const mergedContainerSx: CSSProperties = {
+    ...defaultStyles.container,
+    ...containerSx,
+  
+  };
+  const mergedLabelSx: CSSProperties = {
+    ...defaultStyles.title,
+    fontSize: labelFont,
+    ...titleSx,
+    fontFamily: labelFontFamily,
+  };
+
 
   return (
-    <div style={normalizeSx({ ...defaultStyles.container, ...containerSx })}>
+    <div style={{...mergedContainerSx}}>
       {title && (
        <h2
       style={{
-        // margin: 0,
-        ...defaultStyles.title,
-        ...titleSx,
+       ...mergedLabelSx
       }}
     >
       {title}
@@ -582,7 +613,7 @@ const dotRadius = chartSx.dotRadius ?? defaultStyles.chart.dotRadius;
       ></div>
        </div>
       ) : error ? (
-      <div style={{
+         <div style={{
               fontSize: "25px",
     display: "flex",           // <-- required
     justifyContent: "center",
@@ -594,17 +625,18 @@ paddingLeft:"10px"
           >
             <div
             style={{
-              background:"red",
+            background: "rgba(255, 0, 0, 0.15)",   // light transparent red
+    border: "1px solid rgba(255, 0, 0, 0.6)", // softer red border
               boxShadow:'rgba(149, 157, 165, 0.2) 0px 8px 24px',
           
-              color:"#ffffff",
+              color:"rgba(255, 0, 0, 0.6)",
               textAlign:"center",
               borderRadius:"5px",
               padding:"5px",
    
             }}
             >
-{"error:"+" "+error}
+{error}
             </div>
 
           </div>
@@ -639,12 +671,13 @@ paddingLeft:"10px"
         <svg
           ref={svgRef}
           width={width as number}
-          height={height as number}
+          height={"90%"}
         ></svg>
       )}
     </div>
   );
 };
+
 
 //add customizable toolips, stroke width and color, and title obvs , timestamps for get data request
 //match customization and failsafes to latest data

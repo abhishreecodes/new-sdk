@@ -117,8 +117,26 @@ styles?: StylesInput;
     valueMin: number;
     valueMax: number;
   }) => string;
-   onStyleChange?:(value:number) =>{}
+   onStyleChange?:(value:number) =>{};
+     displayText?: DisplayTextFormatter;
 }
+
+type UnitPosition = "left" | "right" | "top" | "bottom";
+type UnitStyle = "normal" | "subscript" | "superscript";
+
+
+interface DisplayTextResult {
+  text: string;
+  unitText?: string;
+  position?: UnitPosition;
+  unitStyle?: UnitStyle;
+}
+
+type DisplayTextFormatter = (
+  value: number,
+  unit?: string
+) => DisplayTextResult;
+
 
 /* ---------------------- Defaults ---------------------- */
 
@@ -128,8 +146,16 @@ const defaultZones: Zone[] = [
   { from: 60, to: 100, color: "#f44336" }, // red
 ];
 
+// --- Default styles ---
+interface StyleSet {
 
-const defaultContainerSx: CSSProperties = {
+  label?: CSSProperties;
+  value?: CSSProperties;
+  unit?: CSSProperties;
+  fontFamily?: string; // optional global font family for all 3
+}
+
+const defaultContainerSx: any = {
      width: 400,
    height: 250,
    padding: 2,
@@ -146,6 +172,9 @@ const defaultContainerSx: CSSProperties = {
     fontFamily: defaultFontFamily,
     color:"#000000",
  overflowWrap: "break-word",
+  label: { fontWeight: 500, color: "#000000", fontFamily: defaultFontFamily },
+  value: { fontWeight: 700, color: "#000000", fontFamily: defaultFontFamily },
+  unit: { fontWeight: 400, color: "#000000", fontFamily: defaultFontFamily },
 
     
 };
@@ -180,6 +209,7 @@ export const LatestDataGauge: React.FC<GaugeWidgetProps> = ({
   valueText = ({ value: v, valueMin, valueMax }) =>
     v === undefined ? `-- / ${valueMax}` : `${v} / ${valueMax}`,
   onStyleChange,
+    displayText,
 }) => {
 
      validateRequiredProps(
@@ -353,6 +383,16 @@ const resolvedStyles = {
       }
     }
   }, [value]);
+const formatted: DisplayTextResult = displayText
+  ? displayText(Number(value), unit)
+  : {
+      text: String(value ?? ""),
+      unitText: unit,
+      position: "right",
+      unitStyle: "normal",
+    };
+
+
 
 
 
@@ -550,6 +590,17 @@ const resolvedStyles = {
       ...redFade,
     },
   ];
+
+    // --- Scaled font sizes ---
+  const baseFont = Math.min(Number(width), Number(height)) * 0.15;
+
+  // --- Compute font sizes dynamically if not provided by user ---
+  const labelFont = (resolvedStyles?.label as any)?.fontSize ?? baseFont * 0.6;
+
+  const valueFont = (resolvedStyles?.value as any)?.fontSize ?? baseFont * 1.2;
+
+  const unitFont = (resolvedStyles?.unit as any)?.fontSize ?? baseFont * 0.8;
+
   // overall container style (MUI Box)
   const mergedContainer = {
     ...defaultContainerSx,
@@ -558,12 +609,41 @@ const resolvedStyles = {
     height,
   
   };
+  // --- Font family handling ---
+  const globalFontFamily = resolvedStyles?.fontFamily ?? "Roboto";
+  const labelFontFamily = defaultContainerSx.label?.fontFamily ?? globalFontFamily;
+  const valueFontFamily = defaultContainerSx.value?.fontFamily ?? globalFontFamily;
+  const unitFontFamily = defaultContainerSx.label?.fontFamily ?? globalFontFamily;
+  
+
+   const mergedLabelSx: CSSProperties = {
+      ...defaultContainerSx.label,
+      fontSize: labelFont,
+      ...titleSx,
+      fontFamily: labelFontFamily,
+    };
+    const mergedValueSx: CSSProperties = {
+      ...defaultContainerSx.value,
+      fontSize: valueFont,
+      // color: textColor,
+      ...valueTextSx,
+      fontFamily: valueFontFamily,
+    };
+    const mergedUnitSx: CSSProperties = {
+      ...defaultContainerSx.unit,
+      fontSize: unitFont,
+      ...unitSx,
+      fontFamily: unitFontFamily,
+    };
+  
 
   return (
     
     <div style={{...mergedContainer}}>
       {title && (
-        <h2 style={{ ...((resolvedStyles.label as any) ?? {}), ...titleSx }}>
+        <h2 style={{
+          ...mergedLabelSx
+        }}>
           {title}
         </h2>
       )}
@@ -599,17 +679,18 @@ paddingLeft:"10px"
           >
             <div
             style={{
-              background:"red",
+            background: "rgba(255, 0, 0, 0.15)",   // light transparent red
+    border: "1px solid rgba(255, 0, 0, 0.6)", // softer red border
               boxShadow:'rgba(149, 157, 165, 0.2) 0px 8px 24px',
           
-              color:"#ffffff",
+              color:"rgba(255, 0, 0, 0.6)",
               textAlign:"center",
               borderRadius:"5px",
               padding:"5px",
    
             }}
             >
-{"error:"+" "+error}
+{error}
             </div>
 
           </div>
@@ -635,6 +716,9 @@ paddingLeft:"10px"
           offsetText: labelOffset,
         }}
         arcSegments={arcSegments}
+        mergedValueSx={mergedValueSx}
+        mergedUnitSx={mergedUnitSx}
+        formatted={formatted}
       />
         ):  !value?
    

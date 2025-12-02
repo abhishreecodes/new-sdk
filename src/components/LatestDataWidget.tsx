@@ -4,9 +4,9 @@ import { CSSProperties } from "react";
 import { validateRequiredProps } from "../helpers/validate";
 // --- Default color ranges ---
 const defaultColorRanges = [
-  { max: 20, color: "red" },
-  { max: 50, color: "yellow" },
-  { max: Infinity, color: "green" },
+  { max: 40, color: "#008000" },
+  { max: 100, color: "#FFA500" },
+  { max: Infinity, color: "#FF2C2C" },
 ];
 
 type WidgetState = {
@@ -256,7 +256,7 @@ const formatted: DisplayTextResult = displayText
   // --- Compute font sizes dynamically if not provided by user ---
   const labelFont = (resolvedStyles?.label as any)?.fontSize ?? baseFont * 0.6;
 
-  const valueFont = (resolvedStyles?.value as any)?.fontSize ?? baseFont * 1.2;
+  const valueFont = (resolvedStyles?.value as any)?.fontSize ?? baseFont * 3;
 
   const unitFont = (resolvedStyles?.unit as any)?.fontSize ?? baseFont * 0.8;
 
@@ -347,7 +347,7 @@ const formatted: DisplayTextResult = displayText
             ></div>
           </div>
         ) : error ? (
-         <div style={{
+            <div style={{
               fontSize: "25px",
     display: "flex",           // <-- required
     justifyContent: "center",
@@ -359,17 +359,18 @@ paddingLeft:"10px"
           >
             <div
             style={{
-              background:"red",
+            background: "rgba(255, 0, 0, 0.15)",   // light transparent red
+    border: "1px solid rgba(255, 0, 0, 0.6)", // softer red border
               boxShadow:'rgba(149, 157, 165, 0.2) 0px 8px 24px',
           
-              color:"#ffffff",
+              color:"rgba(255, 0, 0, 0.6)",
               textAlign:"center",
               borderRadius:"5px",
               padding:"5px",
    
             }}
             >
-{"error:"+" "+error}
+{error}
             </div>
 
           </div>
