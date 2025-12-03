@@ -110,6 +110,116 @@ return def;
 
 You can also provide your own static colorRange set if you want total control.
 
+📌 LatestData Widget — Callback Options
+
+The LatestData widget supports two optional callbacks that allow you to fully customize how the displayed value and styling behave.
+
+## 1. displayText Callback (Value + Unit Formatter)
+
+The displayText callback lets you customize:
+
+- how the value is displayed
+
+- what unit text should look like
+
+-  here the unit is placed
+
+- unit formatting style (normal, subscript, superscript)
+
+### Signature
+
+```displayText?: (value: number, unit: string) => {
+  text: string;
+  unitText?: string;
+  position?: "left" | "right" | "top" | "bottom";
+  unitStyle?: "normal" | "subscript" | "superscript";
+};
+```
+
+### Usage Example
+ ```
+ <LatestData
+  ...
+  displayText={(value, unit) => ({
+    text: `${value}`,
+    unitText: unit,
+    position: "right",           // left | right | top | bottom
+    unitStyle: "normal",         // normal | subscript | superscript
+  })}
+/>
+```
+
+| Property      | Type |Description                                           |
+| ------------- | ------------------------------------------ | ----------------------------------------------------- |
+| **text**      | `string`                                   | The formatted value to display                        |
+| **unitText**  | `string`                                   | Custom unit text (optional)                           |
+| **position**  | `"left" \| "right" \| "top" \| "bottom"`   | Where the unit should be placed relative to the value |
+| **unitStyle** | `"normal" \| "subscript" \| "superscript"` | Choose how the unit should appear                     |
+
+
+### Examples
+#### Move unit to the top
+```
+displayText={() => ({ text: "25.3", unitText: "°C", position: "top" })}
+```
+
+#### Show unit as subscript
+
+```
+displayText={(value) => ({
+  text: value.toFixed(1),
+  unitText: "ppm",
+  unitStyle: "subscript",
+})}
+```
+## 2. onStyleChange Callback (Dynamic Styling)
+
+This callback lets you override widget styling based on live value updates.
+
+It receives the current numeric value and should return partial styles, which will override the base styles.
+
+### Signature 
+
+```
+onStyleChange?: (value: number) => Partial<LatestDataStyles>;
+```
+### Usage Example
+
+```
+<LatestData
+  ...
+  onStyleChange={(value) => {
+    if (value > 80) {
+      return {
+        value: { color: "red", fontWeight: 700 },
+        unit: { color: "red" },
+      };
+    }
+
+    return {}; // keep original styling
+  }}
+/>
+```
+### What you can style dynamically
+
+You may return overrides for:
+
+| Key          | Description                 |
+| ------------ | --------------------------- |
+| `container`  | Outer wrapper styles        |
+| `label`      | Title text styles           |
+| `value`      | Value text styles           |
+| `unit`       | Unit text styles            |
+| `fontFamily` | Override global font family |
+
+Example returning multiple overrides:
+ ```
+ return {
+  container: { background: "#ffeeee" },
+  value: { color: "#d60000", fontSize: "90px" },
+};
+```
+
 
  🧩 Latest Data Guage
 
@@ -147,6 +257,17 @@ return (
             unit: { fontWeight: 400, color: "#ffffff", fontSize: "30px" },
             fontFamily: "Arial, sans-serif", // global font
           }}
+
+            onStyleChange={(value) => {
+              if (value > 80) {
+                return {
+                  value: { color: "black" },
+                  label: { color: "orange" },
+                };
+              }
+
+              return {}; // keep original styling
+            }}
         />
 );
 }```
@@ -163,6 +284,57 @@ return (
 | styles             | StyleSet                                        |       ❌      | Custom style overrides for container, label, value, and unit.              |
 | colorRange         | typeof defaultColorRanges                       |       ❌      | Optional custom color range configuration.                                 |
 | fontFamily         | string                                          |       ❌      | Global font family applied to all text (defaults to  "Roboto").            |
+
+
+📌 Latest Data Gauge Widget — Callback Options
+
+## 1. onStyleChange Callback (Dynamic Styling)
+
+This callback lets you override widget styling based on live value updates.
+
+It receives the current numeric value and should return partial styles, which will override the base styles.
+
+### Signature 
+
+```
+onStyleChange?: (value: number) => Partial<LatestDataSGuageStyles>;
+```
+### Usage Example
+
+```
+<LatestDataGauge
+  ...
+  onStyleChange={(value) => {
+    if (value > 80) {
+      return {
+        value: { color: "red", fontWeight: 700 },
+        unit: { color: "red" },
+      };
+    }
+
+    return {}; // keep original styling
+  }}
+/>
+```
+### What you can style dynamically
+
+You may return overrides for:
+
+| Key          | Description                 |
+| ------------ | --------------------------- |
+| `container`  | Outer wrapper styles        |
+| `label`      | Title text styles           |
+| `value`      | Value text styles           |
+| `unit`       | Unit text styles            |
+| `fontFamily` | Override global font family |
+
+Example returning multiple overrides:
+ ```
+ return {
+  container: { background: "#ffeeee" },
+  value: { color: "#d60000", fontSize: "90px" },
+};
+```
 
 
 🧩 Chart Widget
@@ -207,9 +379,20 @@ return (
               },
             }}
             tickCount={5}
-            tooltipFormatter={(p) =>
-              `${new Date(p.timestamp).toLocaleString()}: ${p.value}°C`
+              xTickFormat={(d) => d.toLocaleDateString()}
+            yTickFormat={(v) => `${v} °C`}
+            tooltipFormat={(d, unit) =>
+              `${new Date(d.timestamp * 1000)} : ${d.value} Celsius`
             }
+            onStyleChange={(data) => {
+              return {
+                title: { color: "red" },
+                container: {
+                  background: "rgba(232, 236, 240, 1)",
+                  borderRadius: 10,
+                },
+              };
+            }}
           />
 );
 }```
@@ -229,4 +412,129 @@ return (
 | tooltipFormatter   | `(p)=>string`                                   |       ❌      | Tooltip HTML (p is timestamp in seconds epoch)
 | styles             | StyleSet                                        |       ❌      | Custom style overrides for container
 
+📊 Chart Widget — Callback Options
 
+The Chart widget allows you to customize tick labels, tooltip content, and dynamic runtime styles through several optional callbacks.
+
+## 1. xTickFormat (Format X-Axis Labels)
+
+Use this to control how X-axis values are displayed.
+
+### Signature
+
+```
+xTickFormat?: (value: number | Date | string) => string;
+
+```
+
+### Example
+ ```
+xTickFormat={(d) => d.toLocaleDateString()}
+
+```
+
+### Usage
+
+- Format timestamps
+
+- Turn raw numbers into readable labels
+
+- Apply locale-based formats
+
+
+## 2. yTickFormat (Format Y-Axis Labels)
+
+Use this to format numeric Y-axis values.
+
+### Signature 
+
+```
+yTickFormat?: (value: number) => string;
+
+```
+### Example
+ ```
+yTickFormat={(v) => `${v} °C`}
+
+```
+
+### Usage
+
+- Add units
+
+- Round or scale numbers
+
+- Convert to % or fixed decimals
+
+## 3. tooltipFormat (Customize Tooltip Text)
+
+This callback returns the content string used in tooltips when hovering on data points.
+
+### Signature 
+
+``` 
+tooltipFormat?: (dataPoint: ChartDataPoint, unit: string) => string;
+```
+Where ChartDataPoint is typically:
+
+``` 
+{
+  timestamp: number;
+  value: number;
+}
+```
+### Example
+ ```
+tooltipFormat={(d, unit) =>
+  `${new Date(d.timestamp * 1000)} : ${d.value} Celsius`
+}
+```
+
+### Usage
+
+- Format date/time for tooltips
+
+- Add units, custom labels, or metadata
+
+- Show multi-line tooltip content
+
+## 4. onStyleChange (Dynamic Chart Styling)
+This callback allows dynamic runtime style overrides based on the current chart data.
+
+### Signature
+```
+onStyleChange?: (data: ChartDataPoint[]) => Partial<ChartStyleSet>;
+```
+You can return overrides for any part of the chart:
+
+| Key          | Description                       |
+| ------------ | --------------------------------- |
+| `container`  | Wrapper style                     |
+| `title`      | Title text                        |
+| `axis`       | Axis text & tick style            |
+| `tooltip`    | Tooltip background, color, radius |
+| `chart`      | Stroke, width, dot radius         |
+| `fontFamily` | Global font override              |
+
+### Example
+
+```
+onStyleChange={(data) => {
+  return {
+    title: { color: "red" },
+    container: {
+      background: "rgba(232, 236, 240, 1)",
+      borderRadius: 10,
+    },
+  };
+}}
+```
+
+### Use cases
+- Highlight chart when values exceed thresholds
+
+- Change themes based on the data
+
+- Dim colors when dataset is small
+
+- Respond to live-updating data streams
