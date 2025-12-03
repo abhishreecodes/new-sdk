@@ -128,7 +128,8 @@ The displayText callback lets you customize:
 
 ### Signature
 
-```displayText?: (value: number, unit: string) => {
+```
+displayText?: (value: number, unit: string) => {
   text: string;
   unitText?: string;
   position?: "left" | "right" | "top" | "bottom";
@@ -270,7 +271,8 @@ return (
             }}
         />
 );
-}```
+}
+```
 
 ⚙️ Props
 
