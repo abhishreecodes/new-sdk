@@ -32,7 +32,7 @@ export function initAnedyaClient(
 ): AnedyaClient {
   const useGlobal = options?.useGlobal ?? false;
   const forceReinit = options?.forceReinit ?? false;
-  const rateLimitMs = options?.rateLimitMs ?? 10_000; // ✅ default: 10 seconds
+  const rateLimitMs = options?.rateLimitMs ?? 100; // ✅ default: 10 seconds
 
   if (useGlobal && globalClient && !forceReinit) {
     return globalClient;
@@ -117,3 +117,26 @@ export function getAnedyaClient(): AnedyaClient {
 export function resetAnedyaClient(): void {
   globalClient = null;
 }
+
+
+//tick count less -- done
+//rate interval less -- dpne
+//guagae not taking unit -- done
+//error change-- add border and svg icon  -- done
+//latest data widget error not cventered -- done 
+// default should be white background --- done 
+//displaytext gauage
+// Total callbacks to be provided for Number widget: 1-> Styling, 2-> Display Text Formatter - done
+// Callbacks for Chart: 1-> Styling, 2-> Tick Formaters for x and y, 3-> Tooltip formatter -- done 
+
+
+//0-100 red, 40-100, yellow, less than 40 is green - done
+//make  value text defualt bigger in latest data -- done 
+//text styling label not matching in chart and latest data, one is bolder and diff font family ---done
+//make chart size and all others bigger to accodomate overflow of x axis -- done
+//rekmove error keywrd, make opacity higher -- done 
+//fix gauage value init styling
+//afdd display number func in guage
+//make swure its all responsive and make example responsive 
+//x axis tick count and y axis count 
+// user get input for timezone and what format u want to follow -- see how it is managed in the UI-- make callbacks more optimized and user friendly
