@@ -1,16 +1,16 @@
 import React from "react";
 import {
   LatestDataComponent,
-  initAnedyaClient,
+  anedyaClientInit,
   ChartWidget,
   LatestDataGauge,
-} from "yt-tutorial-app";
+} from "public-sdk";
 
 function App() {
   const nodeId = "";
   const tokenId = "";
   const token = "";
-  const client = initAnedyaClient(tokenId, token);
+  const client = anedyaClientInit(tokenId, token);
 
   return (
    <div

@@ -19,7 +19,7 @@ interface InitOptions {
  *
  * @returns client
  */
-declare function initAnedyaClient(tokenId: string, token: string, options?: InitOptions): AnedyaClient;
+declare function anedyaClientInit(tokenId: string, token: string, options?: InitOptions): AnedyaClient;
 
 declare const defaultColorRanges: {
     max: number;
@@ -41,7 +41,7 @@ interface DisplayTextResult$1 {
     unitStyle?: UnitStyle$1;
 }
 type DisplayTextFormatter$1 = (value: number, unit?: string) => DisplayTextResult$1;
-interface LatestDataComponentProps {
+interface LatestDataWidgetProps {
     client: AnedyaClient;
     nodeId: string;
     variable: string;
@@ -54,7 +54,7 @@ interface LatestDataComponentProps {
     displayText?: DisplayTextFormatter$1;
     onStyleChange?: (value: number) => {};
 }
-declare const LatestDataComponent: React.FC<LatestDataComponentProps>;
+declare const LatestDataWidget: React.FC<LatestDataWidgetProps>;
 
 interface ChartDataPoint {
     timestamp: number;
@@ -177,4 +177,4 @@ interface DisplayTextResult {
 type DisplayTextFormatter = (value: number, unit?: string) => DisplayTextResult;
 declare const LatestDataGauge: React.FC<GaugeWidgetProps>;
 
-export { ChartWidget, LatestDataComponent, LatestDataGauge, initAnedyaClient };
+export { ChartWidget, LatestDataGauge, LatestDataWidget, anedyaClientInit };

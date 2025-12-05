@@ -25,7 +25,7 @@ interface InitOptions {
  * @returns client
  */
 
-export function initAnedyaClient(
+export function anedyaClientInit(
   tokenId: string,
   token: string,
   options?: InitOptions
@@ -105,7 +105,7 @@ export function initAnedyaClient(
 export function getAnedyaClient(): AnedyaClient {
   if (!globalClient) {
     throw new Error(
-      "Anedya client not initialized! Call initAnedyaClient first."
+      "Anedya client not initialized! Call anedyaClientInit first."
     );
   }
   return globalClient;

@@ -1,11 +1,12 @@
  🧩 LatestDataWidget
 
-Displays the latest sensor or node data from an Anedya network node.
-Ideal for dashboards that show real-time or near-real-time values (like temperature, pressure, humidity, etc.).
+Displays the latest data from an Anedya node.
+Ideal for dashboards that show latest values (like temperature, pressure, humidity, etc.).
 
 🚀 Usage Example
 
-```import { initAnedyaClient } from "../utils/anedyaClient";
+```
+import { initAnedyaClient } from "../utils/anedyaClient";
 import { LatestDataWidget } from "../components/LatestDataWidget";
 
 const client = initAnedyaClient("TOKEN_ID", "TOKEN");
@@ -29,7 +30,8 @@ value: { fontWeight: 800 },
 }}
 />
 );
-}```
+}
+```
 
 ⚙️ Props
 
@@ -51,7 +53,7 @@ The styles prop allows fine-grained control over the look and feel of the widget
 
 StyleSet Interface
 
-```ts
+```
 interface StyleSet {
 container?: SxProps<Theme>;
 label?: SxProps<Theme>;
@@ -63,7 +65,7 @@ fontFamily?: string; // Optional global font for all texts
 
 Default Styles
 
-```ts
+```
 const defaultStyles = {
 container: {
 bgcolor: "#f4f4f4",
@@ -86,7 +88,7 @@ unit: { fontWeight: 400, color: "#888" },
 
 You can override any of these:
 
-```tsx
+```
 <LatestDataWidget
 styles={{
 container: { bgcolor: "#fff3cd", width: 250, height: 250 },
@@ -99,7 +101,7 @@ value: { color: "#ff9900", fontSize: 32 },
 
 Use colorRangeCallback to apply dynamic colors based on value:
 
-```tsx
+```
 colorRangeCallback={(val, def) => {
 if (val < 30) return "#2ecc71"; // green
 if (val < 70) return "#f1c40f"; // yellow
@@ -126,9 +128,10 @@ The displayText callback lets you customize:
 
 - unit formatting style (normal, subscript, superscript)
 
-### Signature
+### What This Callback Looks Like
 
-```displayText?: (value: number, unit: string) => {
+```
+displayText?: (value: number, unit: string) => {
   text: string;
   unitText?: string;
   position?: "left" | "right" | "top" | "bottom";
@@ -178,7 +181,7 @@ This callback lets you override widget styling based on live value updates.
 
 It receives the current numeric value and should return partial styles, which will override the base styles.
 
-### Signature 
+### What This Callback Looks Like 
 
 ```
 onStyleChange?: (value: number) => Partial<LatestDataStyles>;
@@ -270,7 +273,8 @@ return (
             }}
         />
 );
-}```
+}
+```
 
 ⚙️ Props
 
@@ -294,7 +298,7 @@ This callback lets you override widget styling based on live value updates.
 
 It receives the current numeric value and should return partial styles, which will override the base styles.
 
-### Signature 
+### What This Callback Looks Like 
 
 ```
 onStyleChange?: (value: number) => Partial<LatestDataSGuageStyles>;
@@ -395,7 +399,8 @@ return (
             }}
           />
 );
-}```
+}
+```
 
 ⚙️ Props
 
@@ -420,7 +425,7 @@ The Chart widget allows you to customize tick labels, tooltip content, and dynam
 
 Use this to control how X-axis values are displayed.
 
-### Signature
+### What This Callback Looks Like
 
 ```
 xTickFormat?: (value: number | Date | string) => string;
@@ -446,7 +451,7 @@ xTickFormat={(d) => d.toLocaleDateString()}
 
 Use this to format numeric Y-axis values.
 
-### Signature 
+### What This Callback Looks Like 
 
 ```
 yTickFormat?: (value: number) => string;
@@ -470,7 +475,7 @@ yTickFormat={(v) => `${v} °C`}
 
 This callback returns the content string used in tooltips when hovering on data points.
 
-### Signature 
+### What This Callback Looks Like 
 
 ``` 
 tooltipFormat?: (dataPoint: ChartDataPoint, unit: string) => string;
@@ -501,7 +506,7 @@ tooltipFormat={(d, unit) =>
 ## 4. onStyleChange (Dynamic Chart Styling)
 This callback allows dynamic runtime style overrides based on the current chart data.
 
-### Signature
+### What This Callback Looks Like
 ```
 onStyleChange?: (data: ChartDataPoint[]) => Partial<ChartStyleSet>;
 ```
