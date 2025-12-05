@@ -111,7 +111,7 @@ interface WidgetProps {
   onStyleChange?:(value:number) =>{}
 }
 
-export const LatestDataWidget: React.FC<WidgetProps> = ({
+export const LatestDataWidgetComponent: React.FC<WidgetProps> = ({
   client,
   nodeId,
   variable,
@@ -463,4 +463,4 @@ paddingLeft:"10px"
   );
 };
 
-export default LatestDataWidget;
+export default LatestDataWidgetComponent;

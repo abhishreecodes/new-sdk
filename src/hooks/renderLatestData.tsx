@@ -1,5 +1,5 @@
 import React, { useState, useCallback, JSX } from "react";
-import { LatestDataWidget } from "../components/LatestDataWidget";
+
 import { AnedyaClient } from "../components/types";
 import { Anedya } from "@anedyasystems/anedya-frontend-sdk";
 
@@ -10,6 +10,7 @@ const defaultColorRanges = [
   { max: Infinity, color: "green" },
 ];
 import { CSSProperties } from "react";
+import LatestDataWidgetComponent from "../components/LatestDataWidget";
 
 // --- Default styles ---
 interface StyleSet {
@@ -35,7 +36,7 @@ type DisplayTextFormatter = (
 ) => DisplayTextResult;
 
 
-interface LatestDataComponentProps {
+interface LatestDataWidgetProps {
  client: AnedyaClient;
   nodeId: string;
   variable: string;
@@ -49,7 +50,7 @@ interface LatestDataComponentProps {
   onStyleChange?:(value:number)=>{}
 }
 
-export const LatestDataComponent: React.FC<LatestDataComponentProps> = React.memo((
+export const LatestDataWidget: React.FC<LatestDataWidgetProps> = React.memo((
   {
    client,
   nodeId,
@@ -66,7 +67,7 @@ export const LatestDataComponent: React.FC<LatestDataComponentProps> = React.mem
   return (
     <>
    
-        <LatestDataWidget
+        <LatestDataWidgetComponent
         displayText={displayText}
          client={client}
   nodeId={nodeId}
